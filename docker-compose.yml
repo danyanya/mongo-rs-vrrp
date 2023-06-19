@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  db:
+    image: mongo:5
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "30001"] 
+    volumes:
+      - /opt/mongo/data:/data/db
+    ports:
+      - 30001:30001
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    healthcheck:
+      test: $$(echo "rs.initiate( {_id:'rs0',members:[ {_id:0,host:"$mongo1:30001"},  {_id:1,host:"$mongo2:30001"}, {_id:2,host:"$mongo3:30003",arbiterOnly:true}]}).ok || rs.status().ok" | mongosh --port 30001 --quiet 2>&1 1>/dev/null; echo $?) -eq 0
+      interval: 10s
+      start_period: 30s
+    extra_hosts:
+      - $mongo1:$first
+      - $mongo2:$second
+      - $mongo3:$vip
+
+  arbiter:
+    image: mongo:5
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "30003"]
+    ports:
+      - 30003:30003
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    extra_hosts:
+      - $mongo1:$first
+      - $mongo2:$second
+      - $mongo3:$vip
