@@ -60,12 +60,19 @@ sudo service keepalived restart
 FIRST_IP="192.168.0.1" SECOND_IP="192.168.0.2" VIRTUAL_IP="192.168.0.3" bash /opt/mongo/config/env.sh
 ```
 
-6. Run start command:
+6. Open ports in firewall:
+```bash
+
+ufw allow 30001
+ufw allow 30002
+```
+
+7. Run start command:
 ```bash
 bash /opt/mongo/config/start.sh
 ```
 
-7. Voila, now after 20-40 seconds you will have configured mongodb replica set
+8. Voila, now after 20-40 seconds you will have configured mongodb replica set
 
 ## usage
 
@@ -73,7 +80,9 @@ To connect from any of internal or external service use standard mongodb replica
 
 ```bash
 
-MONGODB_URL="mongodb://$mongo1:30001,$mongo2:30001,$mongo3:30001/?replicaSet=rs0&readPreference=secondaryPreferred"
+MONGODB_URL="mongodb://$FIRST_IP:30001,$SECOND_IP:30001,$VIRTUAL_IP:30001/?replicaSet=rs0&readPreference=secondaryPreferred"
+
+mongosh "$MONGODB_URL"
 
 ```
 
